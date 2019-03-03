@@ -1,20 +1,27 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const request = require('request');
+const app = express();
 
 const apiKey = 'acf290298ef501c8ea98427a8226314c';
 
-const app = express();
-
 app.use(express.static('public'));
-app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+app.set('view engine', 'ejs');
+
+app.get('/', function (req, res) {
+  res.render('index', {
+    weather: null,
+    error: null
+  });
+});
 
 app.post('/', function (req, res) {
   let city = req.body.city;
   let url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
-  console.log(url);
+
   request(url, function (err, response, body) {
     if (err) {
       res.render('index', {
@@ -29,7 +36,9 @@ app.post('/', function (req, res) {
           error: 'Error, please try again'
         });
       } else {
-        let weatherText = `It's ${weather.main.temp} degrees in ${weather.name}!`;
+        let weatherText = `It's ${weather.main.temp} degrees in ${weather.name}, ${weather.sys.country}!\n\n
+                             Mainly sky with ${weather.weather[0].main}`;
+        //console.log(JSON.stringify(weather.weather[0].main));
         res.render('index', {
           weather: weatherText,
           error: null
@@ -40,5 +49,4 @@ app.post('/', function (req, res) {
 });
 
 app.listen(3000, function () {
-  console.log('Example app listening on port 3000!')
-});
+      console.log('Example app listening on port 3000!')});
